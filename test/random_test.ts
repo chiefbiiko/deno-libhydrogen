@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "./deps.ts";
-import { random } from "./../lib.ts";
+import { random } from "./../mod.ts";
 
 Deno.test({
   name: "random.SEEDBYTES",
@@ -10,7 +10,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "new random.Seed() instantiates a random 32-byte seed",
+  name: "random - new random.Seed() instantiates a random 32-byte seed",
   fn(): void {
     const seed: random.Seed = new random.Seed();
 
@@ -104,5 +104,85 @@ Deno.test({
 
     assertEquals(typeof hydrated, "number");
     assert(hydrated < upper_bound);
+  }
+});
+
+Deno.test({
+  name: "random - libhydrogen cut 1",
+  fn(): void {
+    let b: bigint = 0n;
+
+    for (let i: number = 0; i < 10000; i++) {
+      let x: number = random.u32();
+
+      for (let j: number = 0; j < 4; j++) {
+        b += BigInt(x >> j) & 1n;
+      }
+    }
+
+    assert(b > 18000 && b < 22000);
+  }
+});
+
+Deno.test({
+  name: "random - libhydrogen cut 2",
+  fn(): void {
+    const tmp: Uint8Array = random.buf(10000);
+
+    let b: bigint = 0n;
+
+    for (let i: number = 0; i < 10000; i++) {
+      for (let j: number = 0; j < 1; j++) {
+        // b += (tmp[i] >> j) & 1;
+        b += BigInt(tmp[i] >> j) & 1n;
+      }
+    }
+
+    assert(b > 4500 && b < 5500);
+  }
+});
+
+Deno.test({
+  name: "random - libhydrogen cut 3",
+  fn(): void {
+    const seed: random.Seed = new random.Seed();
+
+    let tmp: Uint8Array = random.buf_deterministic(10000, seed);
+    let b: bigint = 0n;
+
+    for (let i: number = 0; i < 10000; i++) {
+      for (let j: number = 0; j < 1; j++) {
+        b += BigInt(tmp[i] >> j) & 1n;
+      }
+    }
+
+    assert(b > 4500 && b < 5500);
+
+    const bp: bigint = b;
+
+    tmp = random.buf_deterministic(10000, seed);
+    b = 0n;
+
+    for (let i: number = 0; i < 10000; i++) {
+      for (let j: number = 0; j < 1; j++) {
+        // b += (tmp[i] >> j) & 1;
+        b += BigInt(tmp[i] >> j) & 1n;
+      }
+    }
+
+    assert(b == bp);
+  }
+});
+
+Deno.test({
+  name: "random - libhydrogen cut 4",
+  fn(): void {
+    for (let i: number = 0; i < 1000; i++) {
+      for (let j: number = 1; j < 100; j++) {
+        let x: number = random.uniform(j);
+
+        assert(x < j);
+      }
+    }
   }
 });
