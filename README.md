@@ -1,18 +1,29 @@
 # deno-libhydrogen
 
 <p align="center">
-  <img width="1864" src="https://raw.githubusercontent.com/chiefbiiko/deno-libhydrogen/master/deno_libhydrogen.png" alt="deno+libhydrogen logo" title="💧">
+  <img width="100%" src="https://raw.githubusercontent.com/chiefbiiko/deno-libhydrogen/master/deno_libhydrogen.png" alt="deno+libhydrogen logo" title="💧">
 </p>
 
 deno plugin 2 [`libhydrogen`](https://github.com/jedisct1/libhydrogen)
 
-![ci](https://github.com/chiefbiiko/deno-libhydrogen/workflows/ci/badge.svg?branch=master)
+![ci-unix](https://github.com/chiefbiiko/deno-libhydrogen/workflows/ci-unix/badge.svg?branch=master) ![ci-windows](https://github.com/chiefbiiko/deno-libhydrogen/workflows/ci-windows/badge.svg?branch=master)
+
+## import
+
+``` ts
+import * as hydro from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.1.0/mod.ts";
+```
 
 ## api
 
-following [`rust-libhydrogen`'s](https://github.com/jedisct1/rust-libhydrogen) API amap
+* [original libhydrogen docs](https://github.com/jedisct1/libhydrogen/wiki)
+* [rust api docs](https://docs.rs/libhydrogen)
 
-### `random`
+following [`rust-libhydrogen`'s](https://github.com/jedisct1/rust-libhydrogen) api amap
+
+### namespaces
+
+#### `random`
 
 ``` ts
 export namespace random {
@@ -35,7 +46,15 @@ export namespace random {
 }
 ```
 
-### `hash`
+**example**
+
+``` ts
+let u32: number = random.uniform(100);
+
+const buf: Uint8Array = random.buf(u32 + 1);
+```
+
+#### `hash`
 
 ``` ts
 export namespace hash {
@@ -68,7 +87,17 @@ export namespace hash {
 }
 ```
 
-### `kdf`
+**example**
+
+``` ts
+const digest: Uint8Array = hash.hash(
+  hash.BYTES,
+  Uint8Array.from([65, 67, 65, 66, 65, 67, 65, 66]),
+  new hash.Context("examples")
+);
+```
+
+#### `kdf`
 
 ``` ts
 export namespace kdf {
@@ -92,7 +121,16 @@ export namespace kdf {
 }
 ```
 
-### `secretbox`
+**example**
+
+``` ts
+const context: kdf.Context = new kdf.Context("examples");
+const master_key: kdf.Key = kdf.Key.gen();
+
+const subkey: Uint8Array = kdf.derive_from_key(32, 1n, context, master_key);
+```
+
+#### `secretbox`
 
 ``` ts
 export namespace secretbox {
@@ -124,7 +162,20 @@ export namespace secretbox {
 }
 ```
 
-### `sign`
+**note** `secretbox.decrypt` throws if the ciphertext/tag is invalid
+
+**example**
+
+``` ts
+const context: secretbox.Context = new secretbox.Context("examples");
+const key: secretbox.Key = secretbox.Key.gen();
+const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
+
+const ciphertext: Uint8Array = secretbox.encrypt(msg, 0n, context, key);
+const plaintext: Uint8Array = secretbox.decrypt(ciphertext, 0n, context, key);
+```
+
+#### `sign`
 
 ``` ts
 export namespace sign {
@@ -167,29 +218,36 @@ export namespace sign {
     finish_verify(signature: Signature, public_key: PublicKey): void;
   }
 
-  class SignImpl implements Sign {
-    private readonly id: Uint8Array;
-    constructor(context: Context);
-    public update(input: Uint8Array): Sign;
-    public finish_create(secret_key: SecretKey): Signature;
-    public finish_verify(signature: Signature, public_key: PublicKey): void;
-  }
-
   export function init(context: Context): Sign;
   export function create(input: Uint8Array, context: Context, secret_key: SecretKey): Signature;
   export function verify(signature: Signature, input: Uint8Array, context: Context, public_key: PublicKey): void;
 }
 ```
 
-### `kx`
+**note** `sign.verify` and `Sign#finish_verify` throw if the signature is invalid
+
+**example**
+
+``` ts
+const context: sign.Context = new sign.Context("example\0");
+const keypair: sign.KeyPair = sign.KeyPair.gen();
+
+const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
+
+const sig: sign.Signature = sign.create(msg, context, keypair.secret_key);
+
+sign.verify(sig, msg, context, keypair.public_key);
+```
+
+#### `kx`
 
 submodule bindings pending
 
-### `pwhash`
+#### `pwhash`
 
 submodule bindings pending
 
-### `utils`
+#### `utils`
 
 ``` ts
 export namespace utils {
@@ -204,13 +262,35 @@ export namespace utils {
 }
 ```
 
+**example**
+
+``` ts
+const bin: Uint8Array = utils.hex2bin("abab");
+
+utils.increment(bin);
+```
+
+#### `errors`
+
+``` ts
+export namespace errors {
+  export class HydroError extends Error {
+    constructor();
+  }
+}
+```
+
+**note** the `errors.HydroError` constructor does not have a message parameter
+
 ## security considerations
 
-+ `deno-libhydrogen` clears any internally allocated memory after use, both on `deno` and `rust` side - to avoid leakage
+* module throws only `errors.HydroError` - its instances have a fixed uninformative bogus message, again - to avoid leakage
 
-+ any instances of `errors.HydroError` have a fixed static message that cannot be altered anyhow, again - to avoid leakage
+  * still there is `err.stack` - make sure to not expose it to the outside of your application
 
-  + still there is `err.stack` - make sure to not expose it to the outside of your application - that minimizes attack vectors
+* `deno-libhydrogen` clears any internally allocated memory after use, both on `deno` and `rust` side - to avoid leakage
+
+  * make sure to clear any secret memory once you no longer need it, fx: `utils.memzero(keypair.secret_key.bufferview)`
 
 ## license
 

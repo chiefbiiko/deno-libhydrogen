@@ -17,8 +17,13 @@ const encoder: TextEncoder = new TextEncoder();
 
 const ZERO_BUF: Uint8Array = new Uint8Array(0);
 
-function check(signal: null | Uint8Array): Uint8Array {
+function check(
+  signal: null | Uint8Array,
+  ...cleanup: Uint8Array[]
+): Uint8Array {
   if (!signal || signal.byteLength === 0) {
+    cleanup.forEach(utils.memzero);
+
     throw new errors.HydroError();
   }
 
@@ -52,7 +57,10 @@ export namespace random {
     control[0] = (out_len >> 8) & 0xff;
     control[1] = out_len & 0xff;
 
-    const buf: Uint8Array = check(plugin.ops.random_buf.dispatch(control));
+    const buf: Uint8Array = check(
+      plugin.ops.random_buf.dispatch(control),
+      control
+    );
 
     utils.memzero(control);
 
@@ -71,7 +79,8 @@ export namespace random {
     control.set(seed.bufferview, 2);
 
     const buf: Uint8Array = check(
-      plugin.ops.random_buf_deterministic.dispatch(control)
+      plugin.ops.random_buf_deterministic.dispatch(control),
+      control
     );
 
     utils.memzero(control);
@@ -119,7 +128,12 @@ export namespace random {
     control[2] = (upper_bound >> 8) & 0xff;
     control[3] = upper_bound & 0xff;
 
-    const buf: Uint8Array = check(plugin.ops.random_uniform.dispatch(control));
+    const buf: Uint8Array = check(
+      plugin.ops.random_uniform.dispatch(control),
+      control
+    );
+
+    utils.memzero(control);
 
     const u32: number =
       (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
@@ -192,7 +206,7 @@ export namespace hash {
 
       control.set(context.bufferview, KEYBYTES);
 
-      this.id = check(plugin.ops.hash_init.dispatch(control));
+      this.id = check(plugin.ops.hash_init.dispatch(control), control);
 
       utils.memzero(control);
     }
@@ -212,7 +226,8 @@ export namespace hash {
       control[5] = out_len & 0xff;
 
       const buf: Uint8Array = check(
-        plugin.ops.hash_defaulthasher_finish.dispatch(control)
+        plugin.ops.hash_defaulthasher_finish.dispatch(control),
+        control
       );
 
       utils.memzero(control);
@@ -247,7 +262,8 @@ export namespace hash {
     control.set(context.bufferview, 2 + KEYBYTES);
 
     const digest: Uint8Array = check(
-      plugin.ops.hash_hash.dispatch(control, input)
+      plugin.ops.hash_hash.dispatch(control, input),
+      control
     );
 
     utils.memzero(control);
@@ -273,7 +289,7 @@ export namespace hash {
 
     control.set(input, KEYBYTES + CONTEXTBYTES);
 
-    check(plugin.ops.hash_hash_into.dispatch(control, out));
+    check(plugin.ops.hash_hash_into.dispatch(control, out), control);
 
     utils.memzero(control);
   }
@@ -358,7 +374,8 @@ export namespace kdf {
     control[KEYBYTES + CONTEXTBYTES + 9] = Number(subkey_id & 0xffn);
 
     const subkey: Uint8Array = check(
-      plugin.ops.kdf_derive_from_key.dispatch(control)
+      plugin.ops.kdf_derive_from_key.dispatch(control),
+      control
     );
 
     utils.memzero(control);
@@ -422,7 +439,8 @@ export namespace secretbox {
       control.set(context.bufferview, KEYBYTES);
 
       this.bufferview = check(
-        plugin.ops.secretbox_probe_create.dispatch(control, input)
+        plugin.ops.secretbox_probe_create.dispatch(control, input),
+        control
       );
 
       utils.memzero(control);
@@ -447,7 +465,10 @@ export namespace secretbox {
 
       control.set(context.bufferview, PROBEBYTES + KEYBYTES);
 
-      check(plugin.ops.secretbox_probe_verify.dispatch(control, input));
+      check(
+        plugin.ops.secretbox_probe_verify.dispatch(control, input),
+        control
+      );
 
       utils.memzero(control);
     }
@@ -479,7 +500,8 @@ export namespace secretbox {
     control[KEYBYTES + CONTEXTBYTES + 7] = Number(msg_id & 0xffn);
 
     const plaintext: Uint8Array = check(
-      plugin.ops.secretbox_decrypt.dispatch(control, input)
+      plugin.ops.secretbox_decrypt.dispatch(control, input),
+      control
     );
 
     utils.memzero(control);
@@ -513,7 +535,8 @@ export namespace secretbox {
     control[KEYBYTES + CONTEXTBYTES + 7] = Number(msg_id & 0xffn);
 
     const ciphertext: Uint8Array = check(
-      plugin.ops.secretbox_encrypt.dispatch(control, input)
+      plugin.ops.secretbox_encrypt.dispatch(control, input),
+      control
     );
 
     utils.memzero(control);
@@ -618,7 +641,7 @@ export namespace sign {
 
       control.set(context.bufferview, 0);
 
-      this.id = check(plugin.ops.sign_init.dispatch(control));
+      this.id = check(plugin.ops.sign_init.dispatch(control), control);
 
       utils.memzero(control);
     }
@@ -639,7 +662,7 @@ export namespace sign {
       control.set(secret_key.bufferview, this.id.byteLength);
 
       const signature: Signature = new Signature(
-        check(plugin.ops.sign_sign_finish_create.dispatch(control))
+        check(plugin.ops.sign_sign_finish_create.dispatch(control), control)
       );
 
       utils.memzero(control);
@@ -658,7 +681,7 @@ export namespace sign {
 
       control.set(public_key.bufferview, this.id.byteLength + BYTES);
 
-      check(plugin.ops.sign_sign_finish_verify.dispatch(control));
+      check(plugin.ops.sign_sign_finish_verify.dispatch(control), control);
 
       utils.memzero(control);
     }
@@ -680,7 +703,7 @@ export namespace sign {
     control.set(context.bufferview, SECRETKEYBYTES);
 
     const signature: Signature = new Signature(
-      check(plugin.ops.sign_create.dispatch(control, input))
+      check(plugin.ops.sign_create.dispatch(control, input), control)
     );
 
     utils.memzero(control);
@@ -704,7 +727,7 @@ export namespace sign {
 
     control.set(signature.bufferview, PUBLICKEYBYTES + CONTEXTBYTES);
 
-    check(plugin.ops.sign_verify.dispatch(control, input));
+    check(plugin.ops.sign_verify.dispatch(control, input), control);
 
     utils.memzero(control);
   }
@@ -736,7 +759,8 @@ export namespace utils {
     control.set(b, 2 + 2 + a.byteLength);
 
     const ordering_byte: Uint8Array = check(
-      plugin.ops.utils_compare.dispatch(control)
+      plugin.ops.utils_compare.dispatch(control),
+      control
     );
 
     utils.memzero(control);
@@ -763,7 +787,8 @@ export namespace utils {
     control.set(b, 2 + 2 + a.byteLength);
 
     const equality_byte: Uint8Array = check(
-      plugin.ops.utils_equal.dispatch(control)
+      plugin.ops.utils_equal.dispatch(control),
+      control
     );
 
     utils.memzero(control);
@@ -793,7 +818,10 @@ export namespace utils {
     control.set(bin_hex, 2 + 2);
     control.set(bin_ignore, 2 + 2 + bin_hex.byteLength);
 
-    const bin: Uint8Array = check(plugin.ops.utils_hex2bin.dispatch(control));
+    const bin: Uint8Array = check(
+      plugin.ops.utils_hex2bin.dispatch(control),
+      control
+    );
 
     utils.memzero(control);
 
@@ -819,7 +847,10 @@ export namespace utils {
 
     control.set(buf, 4);
 
-    const padded: Uint8Array = check(plugin.ops.utils_pad.dispatch(control));
+    const padded: Uint8Array = check(
+      plugin.ops.utils_pad.dispatch(control),
+      control
+    );
 
     utils.memzero(control);
 
@@ -838,7 +869,8 @@ export namespace utils {
     control.set(buf, 4);
 
     const unpadded: Uint8Array = check(
-      plugin.ops.utils_unpad.dispatch(control)
+      plugin.ops.utils_unpad.dispatch(control),
+      control
     );
 
     utils.memzero(control);
