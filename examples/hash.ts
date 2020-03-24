@@ -2,7 +2,7 @@ import { hash } from "./../mod.ts";
 
 const encoder: TextEncoder = new TextEncoder();
 
-const context: hash.Context = new hash.Context("examples");
+const context: hash.Context = hash.Context.create("examples");
 const key: hash.Key = hash.Key.gen();
 
 /// single-part example without a key

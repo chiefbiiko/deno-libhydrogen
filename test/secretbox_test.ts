@@ -79,9 +79,32 @@ Deno.test({
 });
 
 Deno.test({
-  name: "secretbox - new secretbox.Context() instantiates an 8-byte context",
+  name: "secretbox.Context.create(raw_context) creates an 8-byte context",
   fn(): void {
-    const key: secretbox.Key = new secretbox.Key();
+    const context: secretbox.Context = secretbox.Context.create("denoland");
+
+    assertEquals(context.bufferview.byteLength, secretbox.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name:
+    "secretbox - new secretbox.Context(raw_context) instantiates an 8-byte context",
+  fn(): void {
+    const context: secretbox.Context = new secretbox.Context("denoland");
+
+    assertEquals(context.bufferview.byteLength, secretbox.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name: "secretbox.Key.gen() generates a 32-byte key",
+  fn(): void {
+    const key: secretbox.Key = secretbox.Key.gen();
 
     assertEquals(key.bufferview.byteLength, secretbox.KEYBYTES);
 
@@ -101,9 +124,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "secretbox - new secretbox.Probe() instantiates a 16-byte probe",
+  name: "secretbox.Probe.create() creates a 16-byte probe",
   fn(): void {
-    const probe: secretbox.Probe = new secretbox.Probe(INPUT, CONTEXT, KEY);
+    const probe: secretbox.Probe = secretbox.Probe.create(INPUT, CONTEXT, KEY);
 
     assertEquals(probe.bufferview.byteLength, secretbox.PROBEBYTES);
 
@@ -112,9 +135,9 @@ Deno.test({
 });
 
 Deno.test({
-  name: "secretbox.Probe.create() creates a 16-byte probe",
+  name: "secretbox - new secretbox.Probe() instantiates a 16-byte probe",
   fn(): void {
-    const probe: secretbox.Probe = secretbox.Probe.create(INPUT, CONTEXT, KEY);
+    const probe: secretbox.Probe = new secretbox.Probe(INPUT, CONTEXT, KEY);
 
     assertEquals(probe.bufferview.byteLength, secretbox.PROBEBYTES);
 

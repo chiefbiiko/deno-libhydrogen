@@ -43,7 +43,7 @@ fn u8_64(bytes: &[u8]) -> [u8; 64] {
 }
 
 // TODO: impl this without the macro
-// make sure these get dropped!!!
+// TODO: make sure these get zeroed on drop!!!
 lazy_static! {
     static ref DEFAULT_HASHERS: std::sync::Mutex<std::collections::HashMap<u32, libhydrogen::hash::DefaultHasher>> =
         std::sync::Mutex::new(std::collections::HashMap::new());
@@ -165,6 +165,7 @@ pub fn op_random_buf_deterministic_into(
         hydro_op_success_dummy!()
     } else {
         libhydrogen::utils::memzero(&mut control);
+
         hydro_op_failure!()
     }
 }
@@ -291,6 +292,8 @@ pub fn op_hash_defaulthasher_update(
             Err(_) => hydro_op_failure!(),
         }
     } else {
+        libhydrogen::utils::memzero(&mut control);
+
         hydro_op_failure!()
     }
 }
@@ -868,7 +871,11 @@ pub fn op_utils_hex2bin(
                 Err(_) => hydro_op_failure!(),
             }
         }
-        Err(_) => hydro_op_failure!(),
+        Err(_) => {
+            libhydrogen::utils::memzero(&mut control);
+
+            hydro_op_failure!()
+        }
     }
 }
 

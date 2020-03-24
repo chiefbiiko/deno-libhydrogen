@@ -39,9 +39,33 @@ Deno.test({
 });
 
 Deno.test({
-  name: "kdf - new kdf.Context() instantiates an 8-byte context for hashing",
+  name:
+    "kdf.Context.create(raw_context) creates an 8-byte context for hashing",
   fn(): void {
-    const key: kdf.Key = new kdf.Key();
+    const context: kdf.Context = new kdf.Context("denoland");
+
+    assertEquals(context.bufferview.byteLength, kdf.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name:
+    "kdf - new kdf.Context(raw_context) instantiates an 8-byte context for hashing",
+  fn(): void {
+    const context: kdf.Context = new kdf.Context("denoland");
+
+    assertEquals(context.bufferview.byteLength, kdf.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name: "kdf.Key.gen() generates a 32-byte master key for key derivation",
+  fn(): void {
+    const key: kdf.Key = kdf.Key.gen();
 
     assertEquals(key.bufferview.byteLength, kdf.KEYBYTES);
 

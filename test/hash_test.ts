@@ -48,9 +48,33 @@ Deno.test({
 });
 
 Deno.test({
-  name: "hash - new hash.Context() instantiates an 8-byte context for hashing",
+  name:
+    "hash.Context.create(raw_context) creates an 8-byte context for hashing",
   fn(): void {
-    const key: hash.Key = new hash.Key();
+    const context: hash.Context = hash.Context.create("denoland");
+
+    assertEquals(context.bufferview.byteLength, hash.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name:
+    "hash - new hash.Context(raw_context) instantiates an 8-byte context for hashing",
+  fn(): void {
+    const context: hash.Context = new hash.Context("denoland");
+
+    assertEquals(context.bufferview.byteLength, hash.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name: "hash.Key.gen() generates a 32-byte key for hashing",
+  fn(): void {
+    const key: hash.Key = hash.Key.gen();
 
     assertEquals(key.bufferview.byteLength, hash.KEYBYTES);
 

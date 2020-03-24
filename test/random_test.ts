@@ -10,6 +10,17 @@ Deno.test({
 });
 
 Deno.test({
+  name: "random.Seed.gen() generates a random 32-byte seed",
+  fn(): void {
+    const seed: random.Seed = random.Seed.gen();
+
+    assertEquals(seed.bufferview.byteLength, random.SEEDBYTES);
+
+    assert(seed.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
   name: "random - new random.Seed() instantiates a random 32-byte seed",
   fn(): void {
     const seed: random.Seed = new random.Seed();

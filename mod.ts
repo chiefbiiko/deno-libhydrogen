@@ -46,7 +46,7 @@ export namespace random {
       }
     }
 
-    static gen(): Seed {
+    public static gen(): Seed {
       return new Seed();
     }
   }
@@ -112,12 +112,11 @@ export namespace random {
   export function u32(): number {
     const buf: Uint8Array = check(plugin.ops.random_u32.dispatch(ZERO_BUF));
 
-    const u32: number =
-      (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+    const r: number = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
 
     utils.memzero(buf);
 
-    return u32;
+    return r;
   }
 
   export function uniform(upper_bound: number): number {
@@ -135,12 +134,11 @@ export namespace random {
 
     utils.memzero(control);
 
-    const u32: number =
-      (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+    const r: number = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
 
     utils.memzero(buf);
 
-    return u32;
+    return r;
   }
 }
 
@@ -164,6 +162,10 @@ export namespace hash {
       }
 
       this.bufferview = raw_context;
+    }
+
+    public static create(raw_context: string | Uint8Array): Context {
+      return new Context(raw_context);
     }
   }
 
@@ -325,6 +327,10 @@ export namespace kdf {
 
       this.bufferview = raw_context;
     }
+
+    public static create(raw_context: string | Uint8Array): Context {
+      return new Context(raw_context);
+    }
   }
 
   export class Key {
@@ -403,6 +409,10 @@ export namespace secretbox {
       }
 
       this.bufferview = raw_context;
+    }
+
+    public static create(raw_context: string | Uint8Array): Context {
+      return new Context(raw_context);
     }
   }
 
@@ -565,6 +575,10 @@ export namespace sign {
       }
 
       this.bufferview = raw_context;
+    }
+
+    public static create(raw_context: string | Uint8Array): Context {
+      return new Context(raw_context);
     }
   }
 

@@ -21,6 +21,10 @@ import * as hydro from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.1.0/m
 
 following [`rust-libhydrogen`'s](https://github.com/jedisct1/rust-libhydrogen) api amap
 
+**diffs**
+
+* `utils.pad(buf, blocksize)` and `utils.unpad(buf, blocksize)` do not modify `buf` in place - rather return a modified copy of `buf`
+
 ### namespaces
 
 #### `random`
@@ -32,7 +36,7 @@ export namespace random {
   export class Seed {
     public readonly bufferview: Uint8Array;
     constructor(raw_seed?: Uint8Array);
-    static gen(): Seed;
+    public static gen(): Seed;
   }
 
   export function buf(out_len: number): Uint8Array;
@@ -49,9 +53,9 @@ export namespace random {
 **example**
 
 ``` ts
-let u32: number = random.uniform(100);
+const r: number = random.uniform(100);
 
-const buf: Uint8Array = random.buf(u32 + 1);
+const buf: Uint8Array = random.buf(r + 1);
 ```
 
 #### `hash`
@@ -67,6 +71,7 @@ export namespace hash {
   export class Context {
     public readonly bufferview: Uint8Array;
     constructor(raw_context: string | Uint8Array);
+    public static create(raw_context: string | Uint8Array): Context;
   }
 
   export class Key {
@@ -92,8 +97,8 @@ export namespace hash {
 ``` ts
 const digest: Uint8Array = hash.hash(
   hash.BYTES,
-  Uint8Array.from([65, 67, 65, 66, 65, 67, 65, 66]),
-  new hash.Context("examples")
+  Uint8Array.from([65, 67, 65, 66]),
+  hash.Context.create("examples")
 );
 ```
 
@@ -109,6 +114,7 @@ export namespace kdf {
   export class Context {
     public readonly bufferview: Uint8Array;
     constructor(raw_context: string | Uint8Array);
+    public static create(raw_context: string | Uint8Array): Context;
   }
 
   export class Key {
@@ -124,10 +130,12 @@ export namespace kdf {
 **example**
 
 ``` ts
-const context: kdf.Context = new kdf.Context("examples");
-const master_key: kdf.Key = kdf.Key.gen();
-
-const subkey: Uint8Array = kdf.derive_from_key(32, 1n, context, master_key);
+const subkey: Uint8Array = kdf.derive_from_key(
+  32,
+  1n,
+  kdf.Context.create("examples"),
+  kdf.Key.gen()
+);
 ```
 
 #### `secretbox`
@@ -142,6 +150,7 @@ export namespace secretbox {
   export class Context {
     public readonly bufferview: Uint8Array;
     constructor(raw_context: string | Uint8Array);
+    public static create(raw_context: string | Uint8Array): Context;
   }
 
   export class Key {
@@ -162,12 +171,14 @@ export namespace secretbox {
 }
 ```
 
-**note** `secretbox.decrypt` throws if the ciphertext/tag is invalid
+**note**
+
+`secretbox.decrypt` throws if the ciphertext/tag is invalid
 
 **example**
 
 ``` ts
-const context: secretbox.Context = new secretbox.Context("examples");
+const context: secretbox.Context = secretbox.Context.create("examples");
 const key: secretbox.Key = secretbox.Key.gen();
 const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
 
@@ -188,6 +199,7 @@ export namespace sign {
   export class Context {
     public readonly bufferview: Uint8Array;
     constructor(raw_context: string | Uint8Array);
+    public static create(raw_context: string | Uint8Array): Context;
   }
 
   export class KeyPair {
@@ -224,12 +236,14 @@ export namespace sign {
 }
 ```
 
-**note** `sign.verify` and `Sign#finish_verify` throw if the signature is invalid
+**note**
+
+`sign.verify` and `Sign#finish_verify` throw if the signature is invalid
 
 **example**
 
 ``` ts
-const context: sign.Context = new sign.Context("example\0");
+const context: sign.Context = sign.Context.create("example\0");
 const keypair: sign.KeyPair = sign.KeyPair.gen();
 
 const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
@@ -267,7 +281,7 @@ export namespace utils {
 ``` ts
 const bin: Uint8Array = utils.hex2bin("abab");
 
-utils.increment(bin);
+utils.increment(bin); // -> "acab"
 ```
 
 #### `errors`
@@ -280,15 +294,17 @@ export namespace errors {
 }
 ```
 
-**note** the `errors.HydroError` constructor does not have a message parameter
+**note**
+
+the `errors.HydroError` constructor does not have a message parameter
 
 ## security considerations
 
-* module throws only `errors.HydroError` - its instances have a fixed uninformative bogus message, again - to avoid leakage
+* module throws only `errors.HydroError` - its instances have a fixed uninformative bogus message - to avoid leakage
 
-  * still there is `err.stack` - make sure to not expose it to the outside of your application
+  * still there is `err.stack` - make sure not to expose it to the outside of your application
 
-* `deno-libhydrogen` clears any internally allocated memory after use, both on `deno` and `rust` side - to avoid leakage
+* `deno-libhydrogen` clears any internally allocated memory after use, both on `deno` and `rust` side, again - to avoid leakage
 
   * make sure to clear any secret memory once you no longer need it, fx: `utils.memzero(keypair.secret_key.bufferview)`
 

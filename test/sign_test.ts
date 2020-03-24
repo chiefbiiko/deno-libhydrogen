@@ -60,7 +60,29 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sign.KeyPair.create() creates a keypair",
+  name: "sign.Context.create(raw_context) creates an 8-byte context",
+  fn(): void {
+    const context: sign.Context = sign.Context.create("denoland");
+
+    assertEquals(context.bufferview.byteLength, sign.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name: "sign - new sign.Context(raw_context) instantiates an 8-byte context",
+  fn(): void {
+    const context: sign.Context = new sign.Context("denoland");
+
+    assertEquals(context.bufferview.byteLength, sign.CONTEXTBYTES);
+
+    assert(context.bufferview.some((byte: number): boolean => byte !== 0));
+  }
+});
+
+Deno.test({
+  name: "sign.KeyPair.gen() creates a keypair",
   fn(): void {
     const keypair: sign.KeyPair = sign.KeyPair.gen();
 

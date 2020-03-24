@@ -1,6 +1,6 @@
 import { secretbox } from "./../mod.ts";
 
-const context: secretbox.Context = new secretbox.Context("examples");
+const context: secretbox.Context = secretbox.Context.create("examples");
 const key: secretbox.Key = secretbox.Key.gen();
 const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
 

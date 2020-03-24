@@ -1,6 +1,6 @@
 import { kdf } from "./../mod.ts";
 
-const context: kdf.Context = new kdf.Context("examples");
+const context: kdf.Context = kdf.Context.create("examples");
 const master_key: kdf.Key = kdf.Key.gen();
 
 const subkey1: Uint8Array = kdf.derive_from_key(32, 1n, context, master_key);

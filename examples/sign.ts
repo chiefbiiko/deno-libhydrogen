@@ -1,6 +1,6 @@
 import { sign } from "./../mod.ts";
 
-const context: sign.Context = new sign.Context("example\0");
+const context: sign.Context = sign.Context.create("example\0");
 const keypair: sign.KeyPair = sign.KeyPair.gen();
 
 /// single-part signature example
