@@ -38,7 +38,9 @@ export namespace random {
 
     constructor(raw_seed?: Uint8Array) {
       if (raw_seed) {
-        if (raw_seed.byteLength !== SEEDBYTES) throw new errors.HydroError();
+        if (raw_seed.byteLength !== SEEDBYTES) {
+          throw new errors.HydroError();
+        }
 
         this.bufferview = raw_seed;
       } else {
@@ -890,5 +892,27 @@ export namespace utils {
     utils.memzero(control);
 
     return unpadded;
+  }
+}
+
+export namespace version {
+  export function major(): number {
+    const buf: Uint8Array = check(plugin.ops.version_major.dispatch(ZERO_BUF));
+
+    return (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+  }
+
+  export function minor(): number {
+    const buf: Uint8Array = check(plugin.ops.version_minor.dispatch(ZERO_BUF));
+
+    return (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+  }
+
+  export function string(): string {
+    const buf: Uint8Array = check(
+      plugin.ops.version_string.dispatch(ZERO_BUF)
+    );
+
+    return decoder.decode(buf);
   }
 }

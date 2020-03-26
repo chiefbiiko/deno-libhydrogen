@@ -11,7 +11,13 @@ deno plugin 2 [`libhydrogen`](https://github.com/jedisct1/libhydrogen)
 ## import
 
 ``` ts
-import * as hydro from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.1.0/mod.ts";
+import * as hydro from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.2.0/mod.ts";
+```
+
+or just import what you need
+
+``` ts
+import { hash } from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.2.0/mod.ts";
 ```
 
 ## api
@@ -95,11 +101,10 @@ export namespace hash {
 **example**
 
 ``` ts
-const digest: Uint8Array = hash.hash(
-  hash.BYTES,
-  Uint8Array.from([65, 67, 65, 66]),
-  hash.Context.create("examples")
-);
+const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
+const context: hash.Context = hash.Context.create("examples");
+
+const digest: Uint8Array = hash.hash(hash.BYTES, msg, context);
 ```
 
 #### `kdf`
@@ -130,12 +135,10 @@ export namespace kdf {
 **example**
 
 ``` ts
-const subkey: Uint8Array = kdf.derive_from_key(
-  32,
-  1n,
-  kdf.Context.create("examples"),
-  kdf.Key.gen()
-);
+const context: kdf.Context = kdf.Context.create("examples");
+const master_key: kdf.Key = kdf.Key.gen();
+
+const subkey: Uint8Array = kdf.derive_from_key(32, 1n, context, master_key);
 ```
 
 #### `secretbox`
@@ -243,10 +246,10 @@ export namespace sign {
 **example**
 
 ``` ts
+const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
+
 const context: sign.Context = sign.Context.create("example\0");
 const keypair: sign.KeyPair = sign.KeyPair.gen();
-
-const msg: Uint8Array = Uint8Array.from([65, 67, 65, 66]);
 
 const sig: sign.Signature = sign.create(msg, context, keypair.secret_key);
 
@@ -281,7 +284,9 @@ export namespace utils {
 ``` ts
 const bin: Uint8Array = utils.hex2bin("abab");
 
-utils.increment(bin); // -> "acab"
+utils.increment(bin);
+
+const hex: string = utils.bin2hex(bin); // -> "acab"
 ```
 
 #### `errors`
@@ -297,6 +302,24 @@ export namespace errors {
 **note**
 
 the `errors.HydroError` constructor does not have a message parameter
+
+#### `version`
+
+``` ts
+export namespace version {
+  export function major(): number;
+  export function minor(): number;
+  export function string(): string;
+}
+```
+
+**example**
+
+``` ts
+const major: number = version.major();
+const minor: number = version.minor();
+const v: string = version.string();
+```
 
 ## security considerations
 

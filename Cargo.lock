@@ -142,7 +142,7 @@ dependencies = [
 
 [[package]]
 name = "deno-libhydrogen"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "deno_core",
  "lazy_static",

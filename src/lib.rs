@@ -118,6 +118,9 @@ pub fn deno_plugin_init(context: &mut dyn deno_core::PluginInitContext) {
     context.register_op("utils_equal", Box::new(op_utils_equal));
     context.register_op("utils_pad", Box::new(op_utils_pad));
     context.register_op("utils_unpad", Box::new(op_utils_unpad));
+    context.register_op("version_major", Box::new(op_version_major));
+    context.register_op("version_minor", Box::new(op_version_minor));
+    context.register_op("version_string", Box::new(op_version_string));
 }
 
 pub fn op_random_buf(
@@ -127,9 +130,9 @@ pub fn op_random_buf(
     // control[0..2] is reserved for random::buf's outlen arg
     let out_len: u16 = (control[0] as u16) << 8 | (control[1] as u16);
 
-    let buf: Vec<u8> = libhydrogen::random::buf(out_len as usize);
-
     libhydrogen::utils::memzero(&mut control);
+
+    let buf: Vec<u8> = libhydrogen::random::buf(out_len as usize);
 
     deno_core::CoreOp::Sync(buf.into_boxed_slice())
 }
@@ -143,9 +146,9 @@ pub fn op_random_buf_deterministic(
     let seed: libhydrogen::random::Seed =
         libhydrogen::random::Seed::from(u8_32(&control[2..2 + libhydrogen::random::SEEDBYTES]));
 
-    let buf: Vec<u8> = libhydrogen::random::buf_deterministic(out_len as usize, &seed);
-
     libhydrogen::utils::memzero(&mut control);
+
+    let buf: Vec<u8> = libhydrogen::random::buf_deterministic(out_len as usize, &seed);
 
     deno_core::CoreOp::Sync(buf.into_boxed_slice())
 }
@@ -205,9 +208,9 @@ pub fn op_random_u32(
     _control: &[u8],
     _zero_copy: Option<deno_core::ZeroCopyBuf>,
 ) -> deno_core::CoreOp {
-    let four_be_bytes: [u8; 4] = libhydrogen::random::u32().to_be_bytes();
+    let r_bytes: [u8; 4] = libhydrogen::random::u32().to_be_bytes();
 
-    deno_core::CoreOp::Sync(Box::new(four_be_bytes))
+    deno_core::CoreOp::Sync(Box::new(r_bytes))
 }
 
 pub fn op_random_uniform(
@@ -977,4 +980,31 @@ pub fn op_utils_unpad(
             hydro_op_failure!()
         }
     }
+}
+
+pub fn op_version_major(
+    _control: &[u8],
+    _zero_copy: Option<deno_core::ZeroCopyBuf>,
+) -> deno_core::CoreOp {
+    let major_bytes: [u8; 4] = libhydrogen::version::major().to_be_bytes();
+
+    deno_core::CoreOp::Sync(Box::new(major_bytes))
+}
+
+pub fn op_version_minor(
+    _control: &[u8],
+    _zero_copy: Option<deno_core::ZeroCopyBuf>,
+) -> deno_core::CoreOp {
+    let minor_bytes: [u8; 4] = libhydrogen::version::minor().to_be_bytes();
+
+    deno_core::CoreOp::Sync(Box::new(minor_bytes))
+}
+
+pub fn op_version_string(
+    _control: &[u8],
+    _zero_copy: Option<deno_core::ZeroCopyBuf>,
+) -> deno_core::CoreOp {
+    let v_buf: Vec<u8> = libhydrogen::version::string().into_bytes();
+
+    deno_core::CoreOp::Sync(v_buf.into_boxed_slice())
 }
