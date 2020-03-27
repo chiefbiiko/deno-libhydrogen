@@ -1,16 +1,4 @@
-// TODO: switch to little-endianess?
-
-const pluginPath: string = [
-  "target",
-  "debug",
-  (Deno.build.os === "win" ? "" : "lib") +
-    "deno-libhydrogen".replace(/-/g, "_") +
-    (Deno.build.os === "win"
-      ? ".dll"
-      : Deno.build.os === "mac" ? ".dylib" : ".so")
-].join("/");
-
-const plugin = Deno.openPlugin(pluginPath);
+import { plugin } from "./lib.ts";
 
 const decoder: TextDecoder = new TextDecoder();
 const encoder: TextEncoder = new TextEncoder();

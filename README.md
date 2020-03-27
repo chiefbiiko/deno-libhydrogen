@@ -6,18 +6,18 @@
 
 deno plugin 2 [`libhydrogen`](https://github.com/jedisct1/libhydrogen)
 
-![ci-unix](https://github.com/chiefbiiko/deno-libhydrogen/workflows/ci-unix/badge.svg?branch=master) ![ci-windows](https://github.com/chiefbiiko/deno-libhydrogen/workflows/ci-windows/badge.svg?branch=master)
+[![ci](https://github.com/chiefbiiko/deno-libhydrogen/workflows/ci/badge.svg?branch=master)](https://github.com/chiefbiiko/deno-libhydrogen/actions)
 
 ## import
 
 ``` ts
-import * as hydro from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.2.0/mod.ts";
+import * as hydro from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.2.1/mod.ts";
 ```
 
 or just import what you need
 
 ``` ts
-import { hash } from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.2.0/mod.ts";
+import { hash } from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.2.1/mod.ts";
 ```
 
 ## api
@@ -329,7 +329,7 @@ const v: string = version.string();
 
 * `deno-libhydrogen` clears any internally allocated memory after use, both on `deno` and `rust` side, again - to avoid leakage
 
-  * make sure to clear any secret memory once you no longer need it, fx: `utils.memzero(keypair.secret_key.bufferview)`
+  * make sure to clear any secret memory owned by the parent application once you no longer need it, fx: `utils.memzero(keypair.secret_key.bufferview)`
 
 ## license
 
