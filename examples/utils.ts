@@ -6,6 +6,7 @@ const copy: Uint8Array = Uint8Array.from(original);
 utils.increment(copy);
 
 const hex: string = utils.bin2hex(copy); // acab
+
 const order: number = utils.compare(copy, original); // 1
 
 utils.equal(copy, original); // -> false
@@ -18,3 +19,5 @@ utils.equal(padded, original); // -> false
 const unpadded: Uint8Array = utils.unpad(padded, 8);
 
 utils.equal(unpadded, original); // -> true
+
+console.log("0xabab incremented", `0x${hex}`);
