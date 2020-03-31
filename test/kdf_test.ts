@@ -74,7 +74,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "kdf - new kdf.Key() instantiates a 32-byte key for hashing",
+  name: "kdf - new kdf.Key(raw_key?) instantiates a 32-byte key for hashing",
   fn(): void {
     const key: kdf.Key = new kdf.Key();
 

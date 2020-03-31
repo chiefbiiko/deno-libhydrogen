@@ -113,7 +113,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "secretbox - new secretbox.Key() instantiates a 32-byte key",
+  name: "secretbox - new secretbox.Key(raw_key?) instantiates a 32-byte key",
   fn(): void {
     const key: secretbox.Key = new secretbox.Key();
 
@@ -135,7 +135,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "secretbox - new secretbox.Probe() instantiates a 16-byte probe",
+  name:
+    "secretbox - new secretbox.Probe(input, context, key) instantiates a 16-byte probe",
   fn(): void {
     const probe: secretbox.Probe = new secretbox.Probe(INPUT, CONTEXT, KEY);
 

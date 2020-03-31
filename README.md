@@ -20,6 +20,10 @@ or just import what you need
 import { hash } from "https://denopkg.com/chiefbiiko/deno-libhydrogen@v0.2.1/mod.ts";
 ```
 
+## auto-loading prebuilts
+
+during import the module searches a shared library for your os within the directory `./.deno_plugins` - configurable via environment variable `DENO_PLUGINS`. if the plugin can not be located a suitable prebuilt will be fetched from github releases.
+
 ## api
 
 * [original libhydrogen docs](https://github.com/jedisct1/libhydrogen/wiki)

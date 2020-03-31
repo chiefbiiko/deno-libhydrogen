@@ -91,7 +91,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sign - new sign.KeyPair() instantiates a KeyPair",
+  name:
+    "sign - new sign.KeyPair(raw_public_key, raw_secret_key) instantiates a KeyPair",
   fn(): void {
     const created: sign.KeyPair = sign.KeyPair.gen();
 
@@ -105,7 +106,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sign - new sign.PublicKey() instantiates a PublicKey from raw bytes",
+  name:
+    "sign - new sign.PublicKey(raw_public_key) instantiates a PublicKey from raw bytes",
   fn(): void {
     const raw_public_key: Uint8Array = new Uint8Array(sign.PUBLICKEYBYTES);
 
@@ -116,7 +118,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sign - new sign.SecretKey() instantiates a SecretKey from raw bytes",
+  name:
+    "sign - new sign.SecretKey(raw_secret_key) instantiates a SecretKey from raw bytes",
   fn(): void {
     const raw_secret_key: Uint8Array = new Uint8Array(sign.SECRETKEYBYTES);
 
@@ -127,7 +130,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "sign - new sign.Signature() instantiates a Signature from raw bytes",
+  name:
+    "sign - new sign.Signature(raw_signature) instantiates a Signature from raw bytes",
   fn(): void {
     const raw_signature: Uint8Array = new Uint8Array(sign.BYTES);
 

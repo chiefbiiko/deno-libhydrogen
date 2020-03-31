@@ -83,7 +83,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "hash - new hash.Key() instantiates a 32-byte key for hashing",
+  name: "hash - new hash.Key(raw_key?) instantiates a 32-byte key for hashing",
   fn(): void {
     const key: hash.Key = new hash.Key();
 

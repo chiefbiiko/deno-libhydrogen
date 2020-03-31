@@ -21,7 +21,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "random - new random.Seed() instantiates a random 32-byte seed",
+  name:
+    "random - new random.Seed(raw_seed?) instantiates a random 32-byte seed",
   fn(): void {
     const seed: random.Seed = new random.Seed();
 

@@ -2,7 +2,7 @@ const VERSION: string = "v0.2.1";
 
 // NOTE: 2 debug/test local libs set env var DENO_PLUGINS to a directory
 // containg a shared lib for your os
-const PLUGINS: string = Deno.env().DENO_PLUGINS?.trim()?.replace(/\/$/, "") ||
+const PLUGINS: string = Deno.env().DENO_PLUGINS?.trim()?.replace(/\/$/, "") ??
   ".deno_plugins";
 
 const PLUGIN_NAME: string = (Deno.build.os === "win" ? "" : "lib") +
@@ -35,7 +35,7 @@ async function maybe_fetch(): Promise<void> {
     const response: Response = await fetch(REMOTE);
 
     if (!response.ok) {
-      throw Error(`unable to locate plugin @ ${REMOTE}`);
+      throw Error(`unable to fetch plugin from ${REMOTE}`);
     }
 
     const arr_buf: ArrayBuffer = await response.arrayBuffer();
